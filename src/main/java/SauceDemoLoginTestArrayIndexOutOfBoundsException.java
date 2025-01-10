@@ -7,8 +7,9 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
+import java.util.List;
 
-public class SauceDemoLoginTestNoSuchElementException {
+public class SauceDemoLoginTestArrayIndexOutOfBoundsException {
     public static void main(String[] args) {
         // Set the path to the ChromeDriver executable
         System.setProperty("webdriver.chrome.driver", "/path/to/chromedriver");
@@ -21,34 +22,31 @@ public class SauceDemoLoginTestNoSuchElementException {
             // Navigate to the Sauce Demo login page
             driver.get("https://www.saucedemo.com");
 
-            // Find the username and password fields
+            // Log in with valid credentials
             WebElement usernameField = driver.findElement(By.id("user-name"));
             WebElement passwordField = driver.findElement(By.id("password"));
-
-            // Enter valid credentials
             usernameField.sendKeys("standard_user");
             passwordField.sendKeys("secret_sauce");
-
-            // Click the login button
-            WebElement loginButton = driver.findElement(By.id("login-button"));
-            loginButton.click();
+            driver.findElement(By.id("login-button")).click();
 
             // Wait for the inventory page to load
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
             wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("inventory_list")));
 
-            // Verify login success by checking the page title
-            String pageTitle = driver.findElement(By.className("title")).getText();
+            // Get all product names from the inventory page
+            List<WebElement> productElements = driver.findElements(By.className("inventory_item_name"));
+            String[] productNames = new String[3]; // Intentional error: Array size is too small
 
-            if (pageTitle.equals("Products")) {
-                System.out.println("Login test passed! User is on the Products page.");
-            } else {
-                System.out.println("Login test failed! User is not on the Products page.");
+            // Store product names in the array
+            for (int i = 0; i < productElements.size(); i++) {
+                productNames[i] = productElements.get(i).getText(); // Error: ArrayIndexOutOfBoundsException
             }
 
-            // Intentional error: Try to find an element that doesn't exist
-            WebElement nonExistentElement = driver.findElement(By.id("non-existent-id")); // Error: This will throw NoSuchElementException
-            nonExistentElement.click();
+            // Print the product names
+            System.out.println("Product Names:");
+            for (String name : productNames) {
+                System.out.println(name);
+            }
         } catch (Exception e) {
             System.out.println("An exception occurred: " + e.getMessage()); // Debugging clue: This will print the exception message
         } finally {
@@ -58,35 +56,39 @@ public class SauceDemoLoginTestNoSuchElementException {
     }
 }
 
-
 /**
  *
  * Error in the Code
- * NoSuchElementException:
+ * ArrayIndexOutOfBoundsException:
  *
- * The line WebElement nonExistentElement = driver.findElement(By.id("non-existent-id")); tries to locate an element with the ID non-existent-id, which doesn’t exist on the page. This will throw a NoSuchElementException.
+ * The array productNames is initialized with a size of 3, but the number of products on the Sauce Demo inventory page is 6. When the loop tries to store the 4th product name, it throws an ArrayIndexOutOfBoundsException because the array size is exceeded.
  *
  * How to Debug
  * Read the Exception Message:
  *
- * When the code runs, it will throw a NoSuchElementException and print the exception message:
+ * When the code runs, it will throw an ArrayIndexOutOfBoundsException and print the exception message:
  *
  *
- * An exception occurred: no such element: Unable to locate element: {"method":"css selector","selector":"#non\-existent\-id"}
- * This tells you that the element with the ID non-existent-id cannot be found.
+ * An exception occurred: Index 3 out of bounds for length 3
+ * This tells you that the array size is too small to hold all the product names.
  *
  * Fix the Issue:
  *
- * Remove or correct the line causing the error. For example, if you were trying to interact with a real element, use the correct locator
+ * Initialize the array with the correct size based on the number of products. Use productElements.size() to dynamically set the array size:
+ * String[] productNames = new String[productElements.size()];
  *
  *
+ * Add Debugging Clues:
+ *
+ * Print the number of products before initializing the array to ensure the array size is correct:
+ * System.out.println("Number of products: " + productElements.size());
  *
  * Key Takeaways
- * NoSuchElementException occurs when Selenium cannot find an element using the specified locator.
+ * ArrayIndexOutOfBoundsException occurs when you try to access or store data in an array index that doesn’t exist.
  *
- * Always double-check your locators (e.g., ID, class name, XPath) to ensure they match the elements on the page.
+ * Always ensure the array size matches the number of elements you’re working with.
  *
- * Use exception handling to catch and debug errors gracefully.
+ * Use dynamic sizing (e.g., productElements.size()) to avoid hardcoding array sizes.
  *
- * Add debugging clues like printing the current URL or page source to understand the state of the application when the error occurs.
+ * Add debugging clues like printing the number of elements to verify your logic.
  */
